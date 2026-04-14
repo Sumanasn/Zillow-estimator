@@ -16,9 +16,18 @@ if st.button("Deploy Agent"):
         
         if res.status_code == 200:
             data = res.json()
-            st.metric("Price", f"${int(data['price']):,}")
-            st.info(f"Source: {data['source']}")
+            price = int(data['price'])
+            label = data['label']
+                
+            # Format based on rental vs sale
+            suffix = "/mo" if "Rent" in label else ""
+                
+            st.balloons()
+            col1, col2 = st.columns(2)
+            col1.metric(label, f"${price:,}{suffix}")
+            col2.info(f"Data Source: {data['source'].upper()}")
+            st.success(f"Agent successfully identified this as a {label} property.")
         else:
-            st.error(f"Agent Error: {res.json().get('detail')}")
-    except Exception as e:
-        st.error(f"Backend offline. Attempted to connect to: {BACKEND_URL}")
+            st.error("Agent failed to bypass Zillow's security.")
+    except:
+        st.error("Backend offline. Attempted: " + BACKEND_URL)

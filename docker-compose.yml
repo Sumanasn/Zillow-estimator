@@ -1,5 +1,4 @@
 services:
-  # --- The Backend Service (FastAPI + Agent) ---
   backend:
     build: 
       context: ./backend
@@ -7,17 +6,21 @@ services:
     container_name: zillow_agent_backend
     ports:
       - "8000:8000"
-    # Injects the ZENROWS_API_KEY from your local .env file
     env_file:
       - .env
-    # Mounts the memory file so the Agent remembers data after a restart
     volumes:
       - ./backend/memory.json:/app/memory.json
+    # --- ADDED HEALTHCHECK ---
+    # This checks if the API documentation page is reachable inside the container
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: always
     networks:
       - zillow_network
 
-  # --- The Frontend Service (Streamlit UI) ---
   frontend:
     build: 
       context: ./frontend
@@ -26,15 +29,16 @@ services:
     ports:
       - "8501:8501"
     environment:
-      # Tells the UI to talk to the backend container over the internal network
       - BACKEND_URL=http://backend:8000
+    # --- UPDATED DEPENDENCY ---
+    # Frontend now waits for the 'healthy' status, not just 'started'
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: always
     networks:
       - zillow_network
 
-# Internal bridge network for secure communication between containers
 networks:
   zillow_network:
     driver: bridge

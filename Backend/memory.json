@@ -1,14 +1,12 @@
 {
     "1818-SW-4th-Ave-Portland-OR": {
-        "price": "429000",
-        "timestamp": "2026-04-14T10:19:43.123335"
+        "price": "2167",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T19:29:51.599492"
     },
-    "561-w-hoosier-CT-Ave-Bloomington-IN": {
-        "price": "374000",
-        "timestamp": "2026-04-14T10:21:07.906220"
-    },
-    "11814-Meridian-Avenue-S-Everett-WA": {
-        "price": "599950",
-        "timestamp": "2026-04-14T10:23:44.811524"
+    "5302-Wetmore-Avenue-Everett-WA": {
+        "price": "535000",
+        "label": "Listing Price",
+        "timestamp": "2026-04-14T19:31:25.359280"
     }
 }

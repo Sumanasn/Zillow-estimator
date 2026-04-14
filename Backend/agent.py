@@ -3,8 +3,9 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
-from utils import clean_address, extract_price
+from utils import clean_address, extract_property_data
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | AGENT: %(message)s')
 logger = logging.getLogger(__name__)
 
 class ZillowAutonomousAgent:
@@ -15,7 +16,7 @@ class ZillowAutonomousAgent:
         self.memory = self._load_memory()
 
     def _load_memory(self):
-        if os.path.exists(self.memory_file):
+        if os.path.exists(self.memory_file) and os.path.getsize(self.memory_file) > 0:
             with open(self.memory_file, 'r') as f:
                 return json.load(f)
         return {}
@@ -25,44 +26,32 @@ class ZillowAutonomousAgent:
             json.dump(self.memory, f, indent=4)
 
     def is_stale(self, timestamp):
-        """Checks if the cached data is older than the allowed TTL."""
-        cached_time = datetime.fromisoformat(timestamp)
-        return datetime.now() > cached_time + timedelta(hours=self.ttl_hours)
+        return datetime.now() > datetime.fromisoformat(timestamp) + timedelta(hours=self.ttl_hours)
 
     def run(self, address):
         slug = clean_address(address)
         
-        # 1. Check Memory and Freshness
+        # Check Memory
         if slug in self.memory:
             data = self.memory[slug]
             if not self.is_stale(data['timestamp']):
-                logger.info(f"Fresh Memory Hit! Data is from {data['timestamp']}")
-                return {"status": "success", "price": data['price'], "source": "cache"}
-            else:
-                logger.info(f"Stale Memory found for {slug}. Refreshing from Zillow...")
+                logger.info(f"Memory Hit: {slug}")
+                return {"status": "success", **data, "source": "cache"}
 
-        # 2. Execute Fresh Extraction
-        params = {
-            "url": f"https://www.zillow.com/homes/{slug}_rb/",
-            "apikey": self.api_key,
-            "js_render": "true",
-            "antibot": "true",
-            "premium_proxy": "true"
-        }
-
+        # Fetch New Data
+        logger.info(f"Memory Miss: Deploying Agent for {address}")
+        params = {"url": f"https://www.zillow.com/homes/{slug}_rb/", "apikey": self.api_key, "js_render": "true", "antibot": "true", "premium_proxy": "true"}
+        
         try:
-            response = requests.get("https://api.zenrows.com/v1/", params=params, timeout=45)
+            response = requests.get("https://api.zenrows.com/v1/", params=params, timeout=60)
             if response.status_code == 200:
-                price = extract_price(response.text)
-                if price:
-                    # 3. Update Memory with Current Timestamp
-                    self.memory[slug] = {
-                        "price": price,
-                        "timestamp": datetime.now().isoformat()
-                    }
+                extracted = extract_property_data(response.text)
+                if extracted:
+                    result = {**extracted, "timestamp": datetime.now().isoformat()}
+                    self.memory[slug] = result
                     self._save_memory()
-                    return {"status": "success", "price": price, "source": "network"}
+                    return {"status": "success", **result, "source": "network"}
         except Exception as e:
-            logger.error(f"Agent error: {e}")
-            
-        return {"status": "failed", "error": "Could not retrieve fresh data"}
+            logger.error(f"Agent Task Failed: {e}")
+        
+        return {"status": "failed", "error": "Property data unavailable or blocked."}
