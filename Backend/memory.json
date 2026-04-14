@@ -28,5 +28,45 @@
         "price": "446000",
         "label": "Listing Price",
         "timestamp": "2026-04-14T20:51:04.442037"
+    },
+    "1815-SW-4th-Ave-Portland-OR": {
+        "price": "3643",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:54:31.949705"
+    },
+    "1855-SW-4th-Ave-Portland-OR": {
+        "price": "3340",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:54:48.725014"
+    },
+    "1895-SW-4th-Ave-Portland-OR": {
+        "price": "5630",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:56:15.095610"
+    },
+    "1995-SW-4th-Ave-Portland-OR": {
+        "price": "5133",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:57:12.723878"
+    },
+    "1995-SW-8th-Ave-Portland-OR": {
+        "price": "1947",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:57:35.567668"
+    },
+    "1995-SW-34th-Ave-Portland-OR": {
+        "price": "6382",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:57:53.784088"
+    },
+    "2139-SE-38th-Ave-Portland-OR": {
+        "price": "1868",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:58:50.716010"
+    },
+    "2139-SE-35th-Ave-Portland-OR": {
+        "price": "1503",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:59:24.848216"
     }
 }
