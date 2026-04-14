@@ -17,8 +17,10 @@ class ZillowAutonomousAgent:
 
     def _load_memory(self):
         if os.path.exists(self.memory_file) and os.path.getsize(self.memory_file) > 0:
-            with open(self.memory_file, 'r') as f:
-                return json.load(f)
+            try:
+                with open(self.memory_file, 'r') as f:
+                    return json.load(f)
+            except json.JSONDecodeError: return {}
         return {}
 
     def _save_memory(self):
@@ -31,27 +33,39 @@ class ZillowAutonomousAgent:
     def run(self, address):
         slug = clean_address(address)
         
-        # Check Memory
+        # 1. Check Memory
         if slug in self.memory:
             data = self.memory[slug]
-            if not self.is_stale(data['timestamp']):
+            if not self.is_stale(data.get('timestamp', '2000-01-01')):
                 logger.info(f"Memory Hit: {slug}")
                 return {"status": "success", **data, "source": "cache"}
 
-        # Fetch New Data
-        logger.info(f"Memory Miss: Deploying Agent for {address}")
-        params = {"url": f"https://www.zillow.com/homes/{slug}_rb/", "apikey": self.api_key, "js_render": "true", "antibot": "true", "premium_proxy": "true"}
+        # 2. Deploy Network Resource
+        logger.info(f"Memory Miss: Fetching live data for {address}")
+        params = {
+            "url": f"https://www.zillow.com/homes/{slug}_rb/",
+            "apikey": self.api_key,
+            "js_render": "true",
+            "antibot": "true",
+            "premium_proxy": "true"
+        }
         
         try:
             response = requests.get("https://api.zenrows.com/v1/", params=params, timeout=60)
             if response.status_code == 200:
                 extracted = extract_property_data(response.text)
-                if extracted:
-                    result = {**extracted, "timestamp": datetime.now().isoformat()}
-                    self.memory[slug] = result
-                    self._save_memory()
-                    return {"status": "success", **result, "source": "network"}
+                
+                # Check for "Not Found" or "No Data" errors
+                if "error" in extracted:
+                    return {"status": "error", "message": extracted["error"]}
+                
+                # Success: Save to memory
+                result = {**extracted, "timestamp": datetime.now().isoformat()}
+                self.memory[slug] = result
+                self._save_memory()
+                return {"status": "success", **result, "source": "network"}
+                
+            return {"status": "failed", "message": f"ZenRows Error: {response.status_code}"}
         except Exception as e:
-            logger.error(f"Agent Task Failed: {e}")
-        
-        return {"status": "failed", "error": "Property data unavailable or blocked."}
+            logger.error(f"Agent Crash: {e}")
+            return {"status": "failed", "message": str(e)}

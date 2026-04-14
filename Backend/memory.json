@@ -8,5 +8,25 @@
         "price": "535000",
         "label": "Listing Price",
         "timestamp": "2026-04-14T19:31:25.359280"
+    },
+    "12711-Admiralty-Way-Everett-WA": {
+        "price": "2012",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:21:20.999818"
+    },
+    "12713-Admiralty-Way-Everett-WA": {
+        "price": "2483",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:48:17.111423"
+    },
+    "12713-Admiralty-Way-Everett-WA98204": {
+        "price": "3180",
+        "label": "Monthly Rent",
+        "timestamp": "2026-04-14T20:49:09.612081"
+    },
+    "12712-Admiralty-Way-E306-Everett-WA98204": {
+        "price": "446000",
+        "label": "Listing Price",
+        "timestamp": "2026-04-14T20:51:04.442037"
     }
 }

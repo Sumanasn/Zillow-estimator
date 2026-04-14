@@ -2,32 +2,43 @@ import streamlit as st
 import requests
 import os
 
-# This is the CRITICAL line for Docker
-# It defaults to 'backend' (the docker service name) but falls back to localhost for manual runs
+# Internal Docker URL
 BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
 
+st.set_page_config(page_title="Zillow Agent", page_icon="🤖")
 st.title("Zillow Estimate Agent")
-address = st.text_input("Property Address", "11319 NE 23rd St, Vancouver, WA 98684")
+st.markdown("---")
+
+address = st.text_input("Enter Property Address", placeholder="e.g. 11319 NE 23rd St, Vancouver, WA 98684")
 
 if st.button("Deploy Agent"):
-    try:
-        # Note the endpoint path matches your FastAPI route
-        res = requests.post(f"{BACKEND_URL}/agent/execute", json={"address": address})
-        
-        if res.status_code == 200:
-            data = res.json()
-            price = int(data['price'])
-            label = data['label']
+    if not address:
+        st.warning("Please enter an address first.")
+    else:
+        with st.spinner("Agent is navigating Zillow and analyzing data..."):
+            try:
+                res = requests.post(f"{BACKEND_URL}/agent/execute", json={"address": address}, timeout=70)
                 
-            # Format based on rental vs sale
-            suffix = "/mo" if "Rent" in label else ""
+                if res.status_code == 200:
+                    data = res.json()
+                    
+                    if data["status"] == "success":
+                        st.balloons()
+                        price = int(data['price'])
+                        label = data['label']
+                        suffix = "/mo" if "Rent" in label else ""
+                        
+                        col1, col2 = st.columns(2)
+                        col1.metric(label, f"${price:,}{suffix}")
+                        col2.info(f"Source: {data['source'].upper()}")
+                        st.success(f"Agent verified: This is a {label} property.")
+                    
+                    elif data["status"] == "error":
+                        st.error(f"⚠️ {data['message']}")
+                        st.info("Check the address spelling or try a more specific location.")
                 
-            st.balloons()
-            col1, col2 = st.columns(2)
-            col1.metric(label, f"${price:,}{suffix}")
-            col2.info(f"Data Source: {data['source'].upper()}")
-            st.success(f"Agent successfully identified this as a {label} property.")
-        else:
-            st.error("Agent failed to bypass Zillow's security.")
-    except:
-        st.error("Backend offline. Attempted: " + BACKEND_URL)
+                else:
+                    st.error(f"Technical Failure: {res.json().get('detail', 'Unknown Error')}")
+            
+            except Exception as e:
+                st.error(f"Backend offline. Verify Docker containers are healthy.")
