@@ -60,4 +60,4 @@ python -m unittest tests.py
 
 ## 📚 Sources & Acknowledgments
 * [Gemini](https://gemini.google.com) - Architectural guidance and code optimization.
-* [Medium Article](https://medium.com/...) - Insights on modern bot detection.
+* [Medium Article](https://medium.com/@sohail_saifii/web-scraping-in-2025-bypassing-modern-bot-detection-fcab286b117d) - Insights on modern bot detection.
