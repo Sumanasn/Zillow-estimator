@@ -57,3 +57,7 @@ Unit tests are automatically executed during the Docker build process. To run th
 ```bash
 cd backend
 python -m unittest tests.py
+
+## 📚 Sources & Acknowledgments
+* [Gemini](https://gemini.google.com) - Architectural guidance and code optimization.
+* [Medium Article](https://medium.com/...) - Insights on modern bot detection.
